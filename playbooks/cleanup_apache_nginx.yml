@@ -1,0 +1,58 @@
+# cleanup_apache_nginx.yml
+- name: Désinstaller Apache2 et Nginx sur tous les serveurs
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Gather system facts
+      ansible.builtin.setup:
+
+    # === SUPPRESSION APACHE ===
+
+    - name: Supprimer apache2 sur Debian/Ubuntu
+      apt:
+        name: apache2
+        state: absent
+        purge: yes
+        autoremove: yes
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Supprimer httpd (Apache) sur CentOS/RHEL
+      yum:
+        name: httpd
+        state: absent
+      when: ansible_facts['os_family'] == "RedHat"
+
+    # === SUPPRESSION NGINX ===
+
+    - name: Supprimer tous les paquets nginx sur Debian/Ubuntu
+      apt:
+        name: "nginx*"
+        state: absent
+        purge: yes
+        autoremove: yes
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Supprimer tous les paquets nginx sur CentOS/RHEL
+      yum:
+        name: "nginx*"
+        state: absent
+      when: ansible_facts['os_family'] == "RedHat"
+
+    # === VÉRIFICATION POST-SUPPRESSION ===
+
+    - name: Vérifier si nginx est encore présent
+      command: which nginx
+      register: nginx_check
+      ignore_errors: yes
+
+    - name: Message de statut nginx
+      debug:
+        msg: >
+          {% if nginx_check.rc == 0 %}
+            ⚠️ Nginx est encore installé sur {{ inventory_hostname }} !
+          {% else %}
+            ✅ Nginx a bien été supprimé de {{ inventory_hostname }}.
+          {% endif %}
