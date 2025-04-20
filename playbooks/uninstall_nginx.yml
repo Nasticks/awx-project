@@ -1,0 +1,20 @@
+# uninstall_nginx.yml
+- name: Désinstaller nginx sur Debian, Ubuntu ou CentOS
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Supprimer nginx sur Debian/Ubuntu
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+        autoremove: yes
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Supprimer nginx sur CentOS/RHEL
+      yum:
+        name: nginx
+        state: absent
+      when: ansible_facts['os_family'] == "RedHat"

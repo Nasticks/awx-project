@@ -1,0 +1,51 @@
+# switch_to_nginx.yml
+- name: Installer Nginx et supprimer Apache2
+  hosts: all
+  become: true
+  tasks:
+
+    # --- Debian / Ubuntu ---
+
+    - name: Supprimer apache2 sur Debian/Ubuntu
+      apt:
+        name: apache2
+        state: absent
+        purge: yes
+        autoremove: yes
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Installer nginx sur Debian/Ubuntu
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Démarrer et activer nginx sur Debian/Ubuntu
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    # --- CentOS / RHEL ---
+
+    - name: Supprimer httpd (Apache) sur CentOS/RHEL
+      yum:
+        name: httpd
+        state: absent
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Installer nginx sur CentOS/RHEL
+      yum:
+        name: nginx
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Démarrer et activer nginx sur CentOS/RHEL
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "RedHat"

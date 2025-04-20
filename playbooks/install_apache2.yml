@@ -1,0 +1,32 @@
+# install_apache2.yml
+- name: Installer Apache2 sur Debian, Ubuntu ou CentOS
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Installer apache2 sur Debian/Ubuntu
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Installer httpd (Apache) sur CentOS/RHEL
+      yum:
+        name: httpd
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Activer et démarrer apache2 sur Debian/Ubuntu
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Activer et démarrer httpd sur CentOS/RHEL
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "RedHat"
